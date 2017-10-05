@@ -172,7 +172,7 @@ def change():
             return render_template("change.html")
 
         # query database for user
-        db.execute("SELECT * FROM users WHERE id = ?",(session["user_id"],))
+        db.execute("SELECT * FROM users WHERE username = ?",(session["user_id"],))
         rows = db.fetchall()
 
         # ensure old password is correct
@@ -194,7 +194,7 @@ def change():
         hash = pwd_context.encrypt(request.form.get("regpassword"))
         
         # update changed password 
-        db.execute("UPDATE users SET hash = ? WHERE id = ?",(hash, session["user_id"],))
+        db.execute("UPDATE users SET hash = ? WHERE username = ?",(hash, session["user_id"],))
         conn.commit()
 
         # redirect user to home page

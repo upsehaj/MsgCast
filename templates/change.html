@@ -5,22 +5,20 @@
 {% endblock %}
 
 {% block main %}
-    <div class="container col-lg-offset-4 col-lg-4">
-        <form action="{{ url_for('change') }}" method="post">
-            <fieldset>
-                <div class="form-group">
-                    <input class="form-control" name="oldpassword" placeholder="Old Password" type="password"/>
-                </div>
-                <div class="form-group">
-                    <input class="form-control" name="regpassword" placeholder="New Password" type="password"/>
-                </div>
-                <div class="form-group">
-                    <input class="form-control" name="reppassword" placeholder="Confirm New Password" type="password"/>
-                </div>
-                <div class="form-group" align="center">
-                    <button class="btn btn-default" type="submit">Change Password</button>
-                </div>
-            </fieldset>
-        </form>
-    </div>
+    <form action="{{ url_for('change') }}" method="post">
+        <fieldset>
+            <div class="form-group">
+                <input class="form-control" name="oldpassword" placeholder="Old Password" type="password"/>
+            </div>
+            <div class="form-group">
+                <input class="form-control" name="regpassword" placeholder="New Password" type="password"/>
+            </div>
+            <div class="form-group">
+                <input class="form-control" name="reppassword" placeholder="Confirm New Password" type="password"/>
+            </div>
+            <div class="form-group" align="center">
+                <button class="btn btn-default" type="submit">Change Password</button>
+            </div>
+        </fieldset>
+    </form>
 {% endblock %}
