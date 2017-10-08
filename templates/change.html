@@ -8,13 +8,13 @@
     <form action="{{ url_for('change') }}" method="post">
         <fieldset>
             <div class="form-group">
-                <input class="form-control" name="oldpassword" placeholder="Old Password" type="password"/>
+                <input class="form-control" name="oldpassword" placeholder="Old Password" type="password" required/>
             </div>
             <div class="form-group">
-                <input class="form-control" name="regpassword" placeholder="New Password" type="password"/>
+                <input class="form-control" name="regpassword" placeholder="New Password" type="password" required/>
             </div>
             <div class="form-group">
-                <input class="form-control" name="reppassword" placeholder="Confirm New Password" type="password"/>
+                <input class="form-control" name="reppassword" placeholder="Confirm New Password" type="password" required/>
             </div>
             <div class="form-group" align="center">
                 <button class="btn btn-default" type="submit">Change Password</button>

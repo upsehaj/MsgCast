@@ -31,10 +31,25 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def find_details(m):
+    db.execute("SELECT * FROM users WHERE username=?", (m[0][0],))
+    details = db.fetchall()
+
 @app.route("/")
 @login_required
 def index():
-    return render_template("index.html")
+    db.execute("SELECT grp FROM users WHERE username=?", (session["user_id"],))
+    grp = db.fetchall()
+
+    db.execute("SELECT * FROM msgs WHERE grp=?",(grp[0][0],))
+    msgs = db.fetchall()
+
+    db.execute("SELECT * FROM users WHERE username=?",(session["user_id"],))
+    users = db.fetchall()
+
+    info = zip(msgs, users)
+
+    return render_template("index.html", **locals())
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -46,15 +61,15 @@ def login():
     # if user reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
 
-        # ensure username was submitted
-        if not request.form.get("username"):
-            flash("Must provide username")
-            return render_template("login.html")
+        # # ensure username was submitted
+        # if not request.form.get("username"):
+        #     flash("Must provide username")
+        #     return render_template("login.html")
 
-        # ensure password was submitted
-        elif not request.form.get("password"):
-            flash("Must provide password")
-            return render_template("login.html")
+        # # ensure password was submitted
+        # elif not request.form.get("password"):
+        #     flash("Must provide password")
+        #     return render_template("login.html")
 
         # query database for username
         db.execute("SELECT * FROM users WHERE username = ?",(request.form.get("username"),))
@@ -95,25 +110,25 @@ def signup():
     # if user reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
 
-        # ensure username was submitted
-        if not request.form.get("regusername"):
-            flash("Must provide username")
-            return render_template("signup.html")
+        # # ensure username was submitted
+        # if not request.form.get("regusername"):
+        #     flash("Must provide username")
+        #     return render_template("signup.html")
         
-        # ensure first name was submitted
-        if not request.form.get("first"):
-            flash("Must provide First Name")
-            return render_template("signup.html")
+        # # ensure first name was submitted
+        # if not request.form.get("first"):
+        #     flash("Must provide First Name")
+        #     return render_template("signup.html")
 
-        # ensure password was submitted
-        elif not request.form.get("regpassword"):
-            flash("Must provide password")
-            return render_template("signup.html")
+        # # ensure password was submitted
+        # elif not request.form.get("regpassword"):
+        #     flash("Must provide password")
+        #     return render_template("signup.html")
             
-        # ensure password was repeated
-        elif not request.form.get("reppassword"):
-            flash("Must repeat password")
-            return render_template("signup.html")
+        # # ensure password was repeated
+        # elif not request.form.get("reppassword"):
+        #     flash("Must repeat password")
+        #     return render_template("signup.html")
 
         # query database for username
         db.execute("SELECT * FROM users WHERE username = ?",(request.form.get("regusername"),))
@@ -156,20 +171,20 @@ def change():
     # if user reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
 
-        # ensure username was submitted
-        if not request.form.get("oldpassword"):
-            flash("Must provide Old Password")
-            return render_template("change.html")
+        # # ensure username was submitted
+        # if not request.form.get("oldpassword"):
+        #     flash("Must provide Old Password")
+        #     return render_template("change.html")
 
-        # ensure password was submitted
-        elif not request.form.get("regpassword"):
-            flash("Must provide New Password")
-            return render_template("change.html")
+        # # ensure password was submitted
+        # elif not request.form.get("regpassword"):
+        #     flash("Must provide New Password")
+        #     return render_template("change.html")
             
-        # ensure password was repeated
-        elif not request.form.get("reppassword"):
-            flash("Must confirm New Password")
-            return render_template("change.html")
+        # # ensure password was repeated
+        # elif not request.form.get("reppassword"):
+        #     flash("Must confirm New Password")
+        #     return render_template("change.html")
 
         # query database for user
         db.execute("SELECT * FROM users WHERE username = ?",(session["user_id"],))
