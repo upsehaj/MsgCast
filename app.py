@@ -34,10 +34,11 @@ def login_required(f):
 @app.route("/")
 @login_required
 def index():
+
     db.execute("SELECT grp FROM users WHERE username=?", (session["user_id"],))
     grp = db.fetchall()
 
-    db.execute("SELECT msgs.username, first_name||' '||last_name AS name, role, msg, time FROM msgs,users WHERE msgs.username = users.username AND grp=?",(grp[0][0],))
+    db.execute("SELECT msgs.username, first_name||' '||last_name AS name, role, msg, time FROM msgs,users WHERE msgs.username = users.username AND grp=? ORDER BY time DESC",(grp[0][0],))
     msgs = db.fetchall()
 
     return render_template("index.html", **locals())
@@ -166,10 +167,18 @@ def change():
     else:
         return render_template("change.html")
 
-@app.route("/write")
+@app.route("/write", methods=["GET", "POST"])
 @login_required
 def write():
-    return
+
+    if request.method == 'POST':
+        db.execute("INSERT INTO msgs VALUES(?, ?, DATETIME(current_timestamp, '+05 hours','+30 minutes'))", (session["user_id"], request.form.get("msg")))
+        conn.commit()
+
+        return redirect(url_for("index"))
+
+    else:
+        return render_template("write.html")
 
 if __name__=='__main__':
     app.run()
