@@ -8,7 +8,7 @@
     <form action="{{ url_for('write') }}" method="post">
         <fieldset>
             <div class="form-group">
-                <input autocomplete="off" autofocus class="form-control" name="msg" placeholder="Your Message" type="text" required/>
+                <textarea autocomplete="off" autofocus class="form-control" id="mytextbox" name="msg" placeholder="Your Message" type="text" required></textarea>
             </div>
             <div class="form-group">
                 <button class="btn btn-default" type="submit">Broadcast</button>

@@ -30,3 +30,35 @@ body nav
 {
     width: 100%
 }
+body {
+  background-image: url(images/bg.jpg);
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+  background-color: #464646;
+}
+#mytextbox {
+    min-height: 100%;
+    height: auto !important;
+    width: 90%;
+    height: 100%;
+}
+table th
+{
+    color: orange;
+}
+table td
+{
+    text-align: center;
+}
+#msgalign
+{
+    text-align: left;
+}
+@media screen and (max-width: 640px) {
+    table {
+        overflow-x: auto;
+        display: block;
+    }
+}
