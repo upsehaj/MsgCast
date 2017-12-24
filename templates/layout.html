@@ -35,7 +35,7 @@
                             <ul class="nav navbar-nav">
                                 <li><a href="{{ url_for('write') }}">Write Message</a></li>
                             </ul>
-                            {% if rolex[0][0] == 'admin' %}
+                            {% if rolex[0][0] == 'Admin' %}
                                 <ul class="nav navbar-nav">
                                     <li><a href="{{ url_for('manage') }}">Manage Members</a></li>
                                 </ul>
@@ -46,6 +46,7 @@
                             </ul>
                         {% else %}
                             <ul class="nav navbar-nav navbar-right">
+                                <li><a href="{{ url_for('create') }}">Create Group</a></li>
                                 <li><a href="{{ url_for('signup') }}">Sign Up</a></li>
                                 <li><a href="{{ url_for('login') }}">Sign In</a></li>
                             </ul>

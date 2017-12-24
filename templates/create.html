@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Create Group
+{% endblock %}
+
+{% block main %}
+    <form action="{{ url_for('create') }}" method="post">
+        <fieldset>
+            <div class="form-group">
+                <input autocomplete="off" autofocus class="form-control" name="regusername" placeholder="Username" type="text" required/>
+            </div>
+            <div class="form-group">
+                <input autocomplete="off" autofocus class="form-control" name="first" placeholder="First Name" type="text" required/>
+            </div>
+            <div class="form-group">
+                <input autocomplete="off" autofocus class="form-control" name="last" placeholder="Last Name" type="text" required/>
+            </div>
+            <div class="form-group">
+                <input autocomplete="off" autofocus class="form-control" name="group" placeholder="Group Name" type="text" required/>
+            </div>
+            <div class="form-group">
+                <input class="form-control" name="regpassword" placeholder="Password" type="password" required/>
+            </div>
+            <div class="form-group">
+                <input class="form-control" name="reppassword" placeholder="Repeat Password" type="password" required/>
+            </div>
+            <div class="form-group" align="center">
+                <button class="btn btn-default" type="submit">Create</button>
+            </div>
+        </fieldset>
+    </form>
+{% endblock %}

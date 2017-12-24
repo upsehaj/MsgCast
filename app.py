@@ -191,7 +191,73 @@ def write():
 @login_required
 def manage():
 
-    return render_template("manage.html")
+    if request.method == 'POST':
+        return redirect(url_for("manage"))
+
+    else:
+        db.execute("SELECT role FROM users WHERE username=?", (session["user_id"],))
+        rolex = db.fetchall()
+
+        db.execute("SELECT grp FROM users WHERE username=?", (session["user_id"],))
+        grp = db.fetchall()
+
+        db.execute("SELECT username, first_name||' '||last_name AS name, role FROM users WHERE grp=? ORDER BY role DESC", (grp[0][0],))
+        users_list = db.fetchall()
+        
+        curr_user = session["user_id"]
+
+        return render_template("manage.html", **locals())
+
+@app.route("/create", methods=["GET", "POST"])
+def create():
+
+    # forget any user_id
+    session.clear()
+
+    # if user reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+
+        # query database for username
+        db.execute("SELECT * FROM users WHERE username = ?",(request.form.get("regusername"),))
+        rows = db.fetchall()
+
+        # query database group
+        db.execute("SELECT * FROM users WHERE grp = ?",(request.form.get("group"),))
+        g_rows = db.fetchall()
+
+        # ensure username doesn't exist
+        if len(rows) != 0:
+            flash("This Username is already taken!")
+            return render_template("create.html")
+
+        # ensure group doesn't exist
+        if len(g_rows) != 0:
+            flash("This Group Name is already taken!")
+            return render_template("create.html")
+    
+        # check password match
+        if request.form.get("reppassword") != request.form.get("regpassword"):
+            flash("Passwords don't match")
+            return render_template("create.html")
+        
+        # password encryption
+        hash = pwd_context.encrypt(request.form.get("regpassword"))
+        
+        #add user
+        db.execute("INSERT INTO users(username, first_name, last_name, hash, grp, role) VALUES(?, ?, ?, ?, ?, ?)",(request.form.get("regusername"), request.form.get("first"), request.form.get("last"), hash, request.form.get("group"), "Admin"))
+        conn.commit()
+
+        # automatic login
+        db.execute("SELECT * FROM users WHERE username = ?",(request.form.get("regusername"),))
+        rows = db.fetchall()
+        session["user_id"] = rows[0][0]
+
+        # redirect user to home page
+        return redirect(url_for("index"))
+
+    # else if user reached route via GET (as by clicking a link or via redirect)
+    else:
+        return render_template("create.html")       
 
 if __name__=='__main__':
     app.run()

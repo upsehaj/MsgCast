@@ -1,1 +1,30 @@
-hello
+{% extends "layout.html" %}
+
+{% block title %}
+	Manage
+{% endblock %}
+
+{% block main %}
+	<div align="center">
+		<table class="table table-hover" align="center">
+			<tr>
+				<th style="text-align:center">Username</th>
+				<th style="text-align:center">Name</th>
+				<th style="text-align:center">Role</th>
+			</tr>
+            {% for i in range((users_list)|length) %}
+                {% if users_list[i][0] != curr_user %}
+                    <tr>
+                        <td>{{users_list[i][0]}}</td>
+                        <td>{{users_list[i][1]}}</td>
+                        <td>{{users_list[i][2]}}</td>
+                        <td><button type="button" value="remove" class="btn btn-danger btn-xs">Remove</button></td>
+                        {% if users_list[i][2] == 'Member' %}
+                            <td><button type="button" value="admin" class="btn btn-success btn-xs">Make Admin</button></td>
+                        {% endif %}
+                    </tr>
+                {% endif %}
+			{% endfor %}
+		</table>
+	</div>
+{% endblock %}
