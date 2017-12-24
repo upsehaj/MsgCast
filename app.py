@@ -35,6 +35,9 @@ def login_required(f):
 @login_required
 def index():
 
+    db.execute("SELECT role FROM users WHERE username=?", (session["user_id"],))
+    rolex = db.fetchall()
+
     db.execute("SELECT grp FROM users WHERE username=?", (session["user_id"],))
     grp = db.fetchall()
 
@@ -165,12 +168,14 @@ def change():
 
     # else if user reached route via GET (as by clicking a link or via redirect)
     else:
-        return render_template("change.html")
+        db.execute("SELECT role FROM users WHERE username=?", (session["user_id"],))
+        rolex = db.fetchall()
+        return render_template("change.html", **locals())
 
 @app.route("/write", methods=["GET", "POST"])
 @login_required
 def write():
-
+    
     if request.method == 'POST':
         db.execute("INSERT INTO msgs VALUES(?, ?, DATETIME(current_timestamp, '+05 hours','+30 minutes'))", (session["user_id"], request.form.get("msg")))
         conn.commit()
@@ -178,7 +183,15 @@ def write():
         return redirect(url_for("index"))
 
     else:
-        return render_template("write.html")
+        db.execute("SELECT role FROM users WHERE username=?", (session["user_id"],))
+        rolex = db.fetchall()
+        return render_template("write.html", **locals())
+
+@app.route("/manage", methods=["GET", "POST"])
+@login_required
+def manage():
+
+    return render_template("manage.html")
 
 if __name__=='__main__':
     app.run()
