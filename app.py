@@ -192,6 +192,17 @@ def write():
 def manage():
 
     if request.method == 'POST':
+        usr_remove = request.form.get("remove")
+        usr_admin = request.form.get("admin")
+
+        if usr_remove is not None:
+            db.execute("DELETE FROM users WHERE username=?", (usr_remove,))
+            conn.commit()
+        
+        if usr_admin is not None:
+            db.execute('UPDATE users SET role="Admin" WHERE username=?', (usr_admin,))
+            conn.commit()
+
         return redirect(url_for("manage"))
 
     else:

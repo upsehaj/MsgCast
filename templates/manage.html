@@ -18,10 +18,14 @@
                         <td>{{users_list[i][0]}}</td>
                         <td>{{users_list[i][1]}}</td>
                         <td>{{users_list[i][2]}}</td>
-                        <td><button type="button" value="remove" class="btn btn-danger btn-xs">Remove</button></td>
-                        {% if users_list[i][2] == 'Member' %}
-                            <td><button type="button" value="admin" class="btn btn-success btn-xs">Make Admin</button></td>
-                        {% endif %}
+                        <td style="text-align:left">
+                            <form action="{{ url_for('manage') }}" method="post">
+                                <button name="remove" value="{{ users_list[i][0] }}" class="btn btn-danger btn-xs">Remove</button>
+                                {% if users_list[i][2] == 'Member' %}
+                                    <button name="admin" value="{{ users_list[i][0] }}" class="btn btn-success btn-xs">Make Admin</button>
+                                {% endif %}
+                            </form>
+                        </td>
                     </tr>
                 {% endif %}
 			{% endfor %}
