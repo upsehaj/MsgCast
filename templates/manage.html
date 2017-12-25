@@ -9,21 +9,21 @@
 		<table class="table table-hover" align="center">
 			<tr>
 				<th style="text-align:center">Username</th>
-				<th style="text-align:center">Name</th>
-				<th style="text-align:center">Role</th>
+                <th style="text-align:center">Name</th>
+                <th style="text-align:center">DOJ & Role</th>
 			</tr>
             {% for i in range((users_list)|length) %}
                 {% if users_list[i][0] != curr_user %}
                     <tr>
                         <td>{{users_list[i][0]}}</td>
                         <td>{{users_list[i][1]}}</td>
-                        <td>{{users_list[i][2]}}</td>
-                        <td style="text-align:left">
+                        <td style="vertical-align:middle">{{users_list[i][3]}}<br>{{users_list[i][2]}}</td>
+                        <td style="text-align:left;vertical-align:middle">
                             <form action="{{ url_for('manage') }}" method="post">
-                                <button name="remove" value="{{ users_list[i][0] }}" class="btn btn-danger btn-xs">Remove</button>
                                 {% if users_list[i][2] == 'Member' %}
                                     <button name="admin" value="{{ users_list[i][0] }}" class="btn btn-success btn-xs">Make Admin</button>
                                 {% endif %}
+                                <button name="remove" value="{{ users_list[i][0] }}" class="btn btn-danger btn-xs">Remove</button>
                             </form>
                         </td>
                     </tr>

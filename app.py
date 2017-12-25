@@ -113,7 +113,7 @@ def signup():
         hash = pwd_context.encrypt(request.form.get("regpassword"))
         
         #add user
-        db.execute("INSERT INTO users(username, first_name, last_name, hash, grp) VALUES(?, ?, ?, ?, ?)",(request.form.get("regusername"), request.form.get("first"), request.form.get("last"), hash, request.form.get("group")))
+        db.execute("INSERT INTO users(username, first_name, last_name, hash, grp, doj) VALUES(?, ?, ?, ?, ?, DATETIME(current_timestamp, '+05 hours','+30 minutes'))",(request.form.get("regusername"), request.form.get("first"), request.form.get("last"), hash, request.form.get("group")))
         conn.commit()
 
         # automatic login
@@ -212,7 +212,7 @@ def manage():
         db.execute("SELECT grp FROM users WHERE username=?", (session["user_id"],))
         grp = db.fetchall()
 
-        db.execute("SELECT username, first_name||' '||last_name AS name, role FROM users WHERE grp=? ORDER BY role DESC", (grp[0][0],))
+        db.execute("SELECT username, first_name||' '||last_name AS name, role, doj FROM users WHERE grp=? ORDER BY role DESC, doj DESC", (grp[0][0],))
         users_list = db.fetchall()
         
         curr_user = session["user_id"]
@@ -255,7 +255,7 @@ def create():
         hash = pwd_context.encrypt(request.form.get("regpassword"))
         
         #add user
-        db.execute("INSERT INTO users(username, first_name, last_name, hash, grp, role) VALUES(?, ?, ?, ?, ?, ?)",(request.form.get("regusername"), request.form.get("first"), request.form.get("last"), hash, request.form.get("group"), "Admin"))
+        db.execute("INSERT INTO users(username, first_name, last_name, hash, grp, role, doj) VALUES(?, ?, ?, ?, ?, ?, DATETIME(current_timestamp, '+05 hours','+30 minutes'))",(request.form.get("regusername"), request.form.get("first"), request.form.get("last"), hash, request.form.get("group"), "Admin"))
         conn.commit()
 
         # automatic login
