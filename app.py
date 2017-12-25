@@ -105,6 +105,15 @@ def signup():
         if len(rows) != 0:
             flash("This Username is already taken!")
             return render_template("signup.html")
+        
+        # query database for group
+        db.execute("SELECT * FROM users WHERE grp = ?",(request.form.get("group"),))
+        group_chk = db.fetchall()
+
+        # ensure group exists
+        if len(group_chk) == 0:
+            flash("This Group doesn't exist!")
+            return render_template("signup.html")
        
         # check password match
         if request.form.get("reppassword") != request.form.get("regpassword"):
