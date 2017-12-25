@@ -41,8 +41,9 @@
                                 </ul>
                             {% endif %}
                             <ul class="nav navbar-nav navbar-right">
-                                <li><a href="{{ url_for('change') }}">Change Password</a></li>
                                 <li><a href="{{ url_for('logout') }}">Sign Out</a></li>
+                                <li><a href="{{ url_for('change') }}">Change Password</a></li>
+                                <li><a>Hello! {{ logged }}</a></li>
                             </ul>
                         {% else %}
                             <ul class="nav navbar-nav navbar-right">

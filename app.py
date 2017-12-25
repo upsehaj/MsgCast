@@ -44,6 +44,8 @@ def index():
     db.execute("SELECT msgs.username, first_name||' '||last_name AS name, role, msg, time FROM msgs,users WHERE msgs.username = users.username AND grp=? ORDER BY time DESC",(grp[0][0],))
     msgs = db.fetchall()
 
+    logged = session["user_id"]
+
     return render_template("index.html", **locals())
 
 @app.route("/login", methods=["GET", "POST"])
@@ -132,6 +134,11 @@ def signup():
 @login_required
 def change():
     """Change Password."""
+    
+    db.execute("SELECT role FROM users WHERE username=?", (session["user_id"],))
+    rolex = db.fetchall()
+
+    logged = session["user_id"]
 
     # if user reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
@@ -143,17 +150,17 @@ def change():
         # ensure old password is correct
         if not pwd_context.verify(request.form.get("oldpassword"), rows[0][3]):
             flash("Old Password is incorrect!")
-            return render_template("change.html")
+            return render_template("change.html", **locals())
        
         # check password match
         if request.form.get("reppassword") != request.form.get("regpassword"):
             flash("New Password and Confirm Password must be same!")
-            return render_template("change.html")
+            return render_template("change.html", **locals())
         
         # another check
         if pwd_context.verify(request.form.get("regpassword"), rows[0][3]):
             flash("New Password can't be same as Old Password!")
-            return render_template("change.html")
+            return render_template("change.html", **locals())
         
         # password encryption
         hash = pwd_context.encrypt(request.form.get("regpassword"))
@@ -168,8 +175,6 @@ def change():
 
     # else if user reached route via GET (as by clicking a link or via redirect)
     else:
-        db.execute("SELECT role FROM users WHERE username=?", (session["user_id"],))
-        rolex = db.fetchall()
         return render_template("change.html", **locals())
 
 @app.route("/write", methods=["GET", "POST"])
@@ -185,6 +190,9 @@ def write():
     else:
         db.execute("SELECT role FROM users WHERE username=?", (session["user_id"],))
         rolex = db.fetchall()
+
+        logged = session["user_id"]
+
         return render_template("write.html", **locals())
 
 @app.route("/manage", methods=["GET", "POST"])
@@ -216,6 +224,7 @@ def manage():
         users_list = db.fetchall()
         
         curr_user = session["user_id"]
+        logged = session["user_id"]
 
         return render_template("manage.html", **locals())
 
