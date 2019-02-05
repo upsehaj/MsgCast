@@ -3,7 +3,8 @@ from flask_session import Session
 from passlib.apps import custom_app_context as pwd_context
 from tempfile import mkdtemp
 from functools import wraps
-import sqlite3
+from flask_mysqldb import MySQL
+import os
 
 app = Flask(__name__)
 
@@ -20,8 +21,27 @@ app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
-conn = sqlite3.connect('msgcast.db')
-db = conn.cursor()
+app.config["MYSQL_USER"] = ''
+app.config["MYSQL_PASSWORD"] = ''
+app.config["MYSQL_DB"] = ''
+app.config["MYSQL_HOST"] = 'localhost'
+mysql=MySQL(app)
+
+def execute_db(query,args=()):
+    cur=mysql.connection.cursor()
+    cur.execute(query,args)
+    mysql.connection.commit()
+    cur.close()
+
+def query_db(query,args=(),one=False):
+    cur=mysql.connection.cursor()
+    result=cur.execute(query,args)
+    if result>0:
+        values=cur.fetchall()
+        cur.close()
+        return values
+    cur.close()
+    return ()
 
 def login_required(f):
     @wraps(f)
@@ -35,14 +55,11 @@ def login_required(f):
 @login_required
 def index():
 
-    db.execute("SELECT role FROM users WHERE username=?", (session["user_id"],))
-    rolex = db.fetchall()
+    rolex = query_db("SELECT role FROM users WHERE username=%s", (session["user_id"],))
 
-    db.execute("SELECT grp FROM users WHERE username=?", (session["user_id"],))
-    grp = db.fetchall()
+    grp = query_db("SELECT grp FROM users WHERE username=%s", (session["user_id"],))
 
-    db.execute("SELECT msgs.username, first_name||' '||last_name AS name, role, msg, time FROM msgs,users WHERE msgs.username = users.username AND grp=? ORDER BY time DESC",(grp[0][0],))
-    msgs = db.fetchall()
+    msgs = query_db("SELECT msgs.username, first_name||' '||last_name AS name, role, msg, time FROM msgs,users WHERE msgs.username = users.username AND grp=%s ORDER BY time DESC",(grp[0][0],))
 
     logged = session["user_id"]
 
@@ -59,9 +76,7 @@ def login():
     if request.method == "POST":
 
         # query database for username
-        db.execute("SELECT * FROM users WHERE username = ?",(request.form.get("username"),))
-        rows = db.fetchall()
-        # db.close()
+        rows = query_db("SELECT * FROM users WHERE username = %s",(request.form.get("username"),))
 
         # ensure username exists and password is correct
         if len(rows) != 1 or not pwd_context.verify(request.form.get("password"), rows[0][3]):
@@ -98,8 +113,7 @@ def signup():
     if request.method == "POST":
 
         # query database for username
-        db.execute("SELECT * FROM users WHERE username = ?",(request.form.get("regusername"),))
-        rows = db.fetchall()
+        rows = query_db("SELECT * FROM users WHERE username = %s",(request.form.get("regusername"),))
 
         # ensure username doesn't exist
         if len(rows) != 0:
@@ -107,8 +121,7 @@ def signup():
             return render_template("signup.html")
         
         # query database for group
-        db.execute("SELECT * FROM users WHERE grp = ?",(request.form.get("group"),))
-        group_chk = db.fetchall()
+        group_chk = query_db("SELECT * FROM users WHERE grp = %s",(request.form.get("group"),))
 
         # ensure group exists
         if len(group_chk) == 0:
@@ -124,12 +137,10 @@ def signup():
         hash = pwd_context.encrypt(request.form.get("regpassword"))
         
         #add user
-        db.execute("INSERT INTO users(username, first_name, last_name, hash, grp, doj) VALUES(?, ?, ?, ?, ?, DATETIME(current_timestamp, '+05 hours','+30 minutes'))",(request.form.get("regusername"), request.form.get("first"), request.form.get("last"), hash, request.form.get("group")))
-        conn.commit()
+        execute_db("INSERT INTO users(username, first_name, last_name, hash, grp, doj) VALUES(%s, %s, %s, %s, %s, DATETIME(current_timestamp, '+05 hours','+30 minutes'))",(request.form.get("regusername"), request.form.get("first"), request.form.get("last"), hash, request.form.get("group")))
 
         # automatic login
-        db.execute("SELECT * FROM users WHERE username = ?",(request.form.get("regusername"),))
-        rows = db.fetchall()
+        rows = query_db("SELECT * FROM users WHERE username = %s",(request.form.get("regusername"),))
         session["user_id"] = rows[0][0]
 
         # redirect user to home page
@@ -144,8 +155,7 @@ def signup():
 def change():
     """Change Password."""
     
-    db.execute("SELECT role FROM users WHERE username=?", (session["user_id"],))
-    rolex = db.fetchall()
+    rolex = query_db("SELECT role FROM users WHERE username=%s", (session["user_id"],))
 
     logged = session["user_id"]
 
@@ -153,8 +163,7 @@ def change():
     if request.method == "POST":
 
         # query database for user
-        db.execute("SELECT * FROM users WHERE username = ?",(session["user_id"],))
-        rows = db.fetchall()
+        rows = query_db("SELECT * FROM users WHERE username = %s",(session["user_id"],))
 
         # ensure old password is correct
         if not pwd_context.verify(request.form.get("oldpassword"), rows[0][3]):
@@ -175,8 +184,7 @@ def change():
         hash = pwd_context.encrypt(request.form.get("regpassword"))
         
         # update changed password 
-        db.execute("UPDATE users SET hash = ? WHERE username = ?",(hash, session["user_id"],))
-        conn.commit()
+        execute_db("UPDATE users SET hash = %s WHERE username = %s",(hash, session["user_id"],))
 
         # redirect user to home page
         flash("Password changed successfully!")
@@ -191,14 +199,12 @@ def change():
 def write():
     
     if request.method == 'POST':
-        db.execute("INSERT INTO msgs VALUES(?, ?, DATETIME(current_timestamp, '+05 hours','+30 minutes'))", (session["user_id"], request.form.get("msg")))
-        conn.commit()
+        execute_db("INSERT INTO msgs VALUES(%s, %s, now())", (session["user_id"], request.form.get("msg")))
 
         return redirect(url_for("index"))
 
     else:
-        db.execute("SELECT role FROM users WHERE username=?", (session["user_id"],))
-        rolex = db.fetchall()
+        rolex = query_db("SELECT role FROM users WHERE username=%s", (session["user_id"],))
 
         logged = session["user_id"]
 
@@ -213,24 +219,19 @@ def manage():
         usr_admin = request.form.get("admin")
 
         if usr_remove is not None:
-            db.execute("DELETE FROM users WHERE username=?", (usr_remove,))
-            conn.commit()
+            execute_db("DELETE FROM users WHERE username=%s", (usr_remove,))
         
         if usr_admin is not None:
-            db.execute('UPDATE users SET role="Admin" WHERE username=?', (usr_admin,))
-            conn.commit()
+            execute_db('UPDATE users SET role="Admin" WHERE username=%s', (usr_admin,))
 
         return redirect(url_for("manage"))
 
     else:
-        db.execute("SELECT role FROM users WHERE username=?", (session["user_id"],))
-        rolex = db.fetchall()
+        rolex = query_db("SELECT role FROM users WHERE username=%s", (session["user_id"],))
 
-        db.execute("SELECT grp FROM users WHERE username=?", (session["user_id"],))
-        grp = db.fetchall()
+        grp = query_db("SELECT grp FROM users WHERE username=%s", (session["user_id"],))
 
-        db.execute("SELECT username, first_name||' '||last_name AS name, role, doj FROM users WHERE grp=? ORDER BY role DESC, doj DESC", (grp[0][0],))
-        users_list = db.fetchall()
+        users_list = query_db("SELECT username, first_name||' '||last_name AS name, role, doj FROM users WHERE grp=%s ORDER BY role DESC, doj DESC", (grp[0][0],))
         
         curr_user = session["user_id"]
         logged = session["user_id"]
@@ -247,12 +248,10 @@ def create():
     if request.method == "POST":
 
         # query database for username
-        db.execute("SELECT * FROM users WHERE username = ?",(request.form.get("regusername"),))
-        rows = db.fetchall()
+        rows = query_db("SELECT * FROM users WHERE username = %s",(request.form.get("regusername"),))
 
         # query database group
-        db.execute("SELECT * FROM users WHERE grp = ?",(request.form.get("group"),))
-        g_rows = db.fetchall()
+        g_rows = query_db("SELECT * FROM users WHERE grp = %s",(request.form.get("group"),))
 
         # ensure username doesn't exist
         if len(rows) != 0:
@@ -273,12 +272,10 @@ def create():
         hash = pwd_context.encrypt(request.form.get("regpassword"))
         
         #add user
-        db.execute("INSERT INTO users(username, first_name, last_name, hash, grp, role, doj) VALUES(?, ?, ?, ?, ?, ?, DATETIME(current_timestamp, '+05 hours','+30 minutes'))",(request.form.get("regusername"), request.form.get("first"), request.form.get("last"), hash, request.form.get("group"), "Admin"))
-        conn.commit()
+        execute_db("INSERT INTO users(username, first_name, last_name, hash, grp, role, doj) VALUES(%s, %s, %s, %s, %s, %s, now())",(request.form.get("regusername"), request.form.get("first"), request.form.get("last"), hash, request.form.get("group"), "Admin"))
 
         # automatic login
-        db.execute("SELECT * FROM users WHERE username = ?",(request.form.get("regusername"),))
-        rows = db.fetchall()
+        rows = query_db("SELECT * FROM users WHERE username = %s",(request.form.get("regusername"),))
         session["user_id"] = rows[0][0]
 
         # redirect user to home page
@@ -287,6 +284,7 @@ def create():
     # else if user reached route via GET (as by clicking a link or via redirect)
     else:
         return render_template("create.html")       
-
-if __name__=='__main__':
-    app.run()
+    
+if __name__ == "__main__":    
+    app.secret_key = os.urandom(24)
+    app.run(host = "127.0.0.1",debug=True,port=5000)
